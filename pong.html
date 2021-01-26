@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pong</title>
+  </head>
+
+  <body>
+
+    <div id="score-left"></div><div id="score-right"></div>
+    <canvas id="board" width="1000" height="600"></canvas>
+  </body>
+
+  <script>
+    const board_background = 'black';
+    const line_color = 'white';
+    const paddle_color = 'white';
+
+
+    let paddle_left = [
+    {x: 50, y: 360},
+    {x: 50, y: 350},
+    {x: 50, y: 340},
+    {x: 50, y: 330},
+    {x: 50, y: 320},
+    {x: 50, y: 310},
+    {x: 50, y: 300},
+    {x: 50, y: 290},
+    {x: 50, y: 280},
+    {x: 50, y: 270},
+    {x: 50, y: 260},
+    {x: 50, y: 250},
+    {x: 50, y: 240},
+    {x: 50, y: 230},
+    {x: 50, y: 220}
+    ]
+
+    let paddle_right = [
+    {x: 930, y: 360},
+    {x: 930, y: 350},
+    {x: 930, y: 340},
+    {x: 930, y: 330},
+    {x: 930, y: 320},
+    {x: 930, y: 310},
+    {x: 930, y: 300},
+    {x: 930, y: 290},
+    {x: 930, y: 280},
+    {x: 930, y: 270},
+    {x: 930, y: 260},
+    {x: 930, y: 250},
+    {x: 930, y: 240},
+    {x: 930, y: 230},
+    {x: 930, y: 220}
+    ]
+
+    let game_over = 0;
+    let winner = 0;
+
+    let player_one_score = 0;
+    let player_two_score = 0;
+
+    let ball_x = 500;
+    let ball_y = 500;
+
+    let dx = 10;
+    let dy = 10;
+
+    const board = document.getElementById("board");
+    const board_context = board.getContext("2d");
+
+    main();
+
+    document.addEventListener("keydown", movePaddle);
+
+    function main() {
+
+        setTimeout(function onTick() {
+          clear_board();
+          moveCPUPaddle();
+          drawPaddles();
+          moveBall();
+          drawBall(ball_x, ball_y);
+          if (!game_over) {
+            main();
+          } else {
+            clear_board();
+          }
+        
+      }, 100)
+    }
+
+    function clear_board() {
+
+      board_context.fillStyle = board_background;
+      board_context.fillRect(0, 0, board.width, board.height);
+
+      board_context.fillStyle = line_color;
+      board_context.fillRect(490, 0, 10, 600);
+
+      board_context.font = "100px Arial";
+      board_context.fillText(player_one_score, 250, 100);
+      board_context.fillText(player_two_score, 750, 100);
+    }
+
+    function drawPaddles() {
+      paddle_left.forEach(drawPaddle)
+      paddle_right.forEach(drawPaddle)
+    }
+    
+    function drawPaddle(paddle_cube) {
+      board_context.fillStyle = paddle_color;
+      board_context.fillRect(paddle_cube.x, paddle_cube.y, 20, 10);
+    }
+
+    function drawBall(ball_x, ball_y) {
+      board_context.beginPath();
+      board_context.arc(ball_x, ball_y, 10, 0, 2 * Math.PI);
+      board_context.fillStyle = paddle_color;
+      board_context.fill();
+    }
+
+    function movePaddle(event) {
+      const UP_KEY = 38;
+      const DOWN_KEY = 40;
+      const SPACE_KEY = 32;
+      const keyPressed = event.keyCode;
+      const left_length = paddle_left.length -1;
+
+      if (keyPressed === UP_KEY && paddle_left[left_length].y != 0) {
+        const bottom = {x: paddle_left[left_length].x, y: paddle_left[left_length].y - 10};
+        paddle_left.push(bottom);
+        paddle_left.shift();
+      }
+
+      if (keyPressed === DOWN_KEY && paddle_left[0].y != 590) {
+        const top = {x: paddle_left[0].x, y: paddle_left[0].y + 10};
+        paddle_left.unshift(top);
+        paddle_left.pop();
+      }
+
+      if (keyPressed === SPACE_KEY && game_over) {
+        ball_x = 500;
+        ball_y = 500;
+        if (dy > 10) dy = 10;
+        if (dy < -10) dy = -10;
+        dx = -dx;
+        dy = -dy;
+        game_over = 0;
+        main();
+      }
+    }
+
+    function moveCPUPaddle() {
+      const right_length = paddle_right.length -1;
+
+      if (ball_y < paddle_right[right_length/2].y && paddle_right[right_length].y != 0) {
+        const bottom = {x: paddle_right[right_length].x, y: paddle_right[right_length].y - 10};
+        paddle_right.push(bottom);
+        paddle_right.shift();
+      }
+
+      if (ball_y > paddle_right[right_length/2].y && paddle_right[0].y != board.height - 10) {
+        const top = {x: paddle_right[0].x, y: paddle_right[0].y + 10};
+        paddle_right.unshift(top);
+        paddle_right.pop();
+      }
+    }
+
+    function moveBall() {
+      if (ball_y < 10) {
+        dy = -dy;
+      } if (ball_y > board.height - 10) {
+        dy = -dy;
+      }
+      if (ball_x < 10) {
+        player_two_score += 1;
+        game_over = 1;
+      } if (ball_x > board.width - 10) {
+        player_one_score += 1;
+        game_over = 1;
+      }
+      
+      for (let i = 0; i < paddle_left.length; i++) {
+        if (ball_x == 70 && ball_y == paddle_left[i].y) {
+          dx = -dx;
+          dy = -dy;
+          if (i < 5 || i > 9) {
+            if (dy > 0) dy += 10;
+            else dy -= 10;
+          } else {
+            dx = -10;
+            dy = -10;
+          }
+
+        }
+      }
+
+      for (let i = 0; i < paddle_right.length; i++) {
+        if (ball_x == 930 && ball_y == paddle_right[i].y) dx = -dx;
+        
+      }
+
+      ball_x += dx;
+      ball_y += dy;
+    }
+    
+  </script>
+</html>
