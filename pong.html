@@ -27,11 +27,7 @@
     {x: 50, y: 290},
     {x: 50, y: 280},
     {x: 50, y: 270},
-    {x: 50, y: 260},
-    {x: 50, y: 250},
-    {x: 50, y: 240},
-    {x: 50, y: 230},
-    {x: 50, y: 220}
+    {x: 50, y: 260}
     ]
 
     let paddle_right = [
@@ -45,11 +41,7 @@
     {x: 930, y: 290},
     {x: 930, y: 280},
     {x: 930, y: 270},
-    {x: 930, y: 260},
-    {x: 930, y: 250},
-    {x: 930, y: 240},
-    {x: 930, y: 230},
-    {x: 930, y: 220}
+    {x: 930, y: 260}
     ]
 
     let game_over = 0;
@@ -59,10 +51,11 @@
     let player_two_score = 0;
 
     let ball_x = 500;
-    let ball_y = 500;
+    let ball_y = 300;
 
     let dx = 10;
     let dy = 10;
+    var speed = 100;
 
     const board = document.getElementById("board");
     const board_context = board.getContext("2d");
@@ -85,7 +78,7 @@
             clear_board();
           }
         
-      }, 100)
+      }, speed)
     }
 
     function clear_board() {
@@ -166,6 +159,9 @@
     }
 
     function moveBall() {
+      let paddle_left_length = paddle_left.length - 1
+      let paddle_right_length = paddle_right.length - 1 
+
       if (ball_y < 10) {
         dy = -dy;
       } if (ball_y > board.height - 10) {
@@ -178,27 +174,26 @@
         player_one_score += 1;
         game_over = 1;
       }
-      
-      for (let i = 0; i < paddle_left.length; i++) {
-        if (ball_x == 70 && ball_y == paddle_left[i].y) {
-          dx = -dx;
-          dy = -dy;
-          if (i < 5 || i > 9) {
-            if (dy > 0) dy += 10;
-            else dy -= 10;
-          } else {
-            dx = -10;
-            dy = -10;
+
+      if (ball_x == 70 && ball_y <= paddle_left[0].y && ball_y >= paddle_left[paddle_left_length].y) {
+            dx = -dx;
+            if (ball_y > paddle_left[3].y || ball_y < paddle_left[paddle_left_length - 2].y){
+              if (speed > 20) {
+                speed -= 50;
+              }
+            }
+            
           }
 
-        }
+      if (ball_x == 930 && ball_y <= paddle_right[0].y && ball_y >= paddle_right[paddle_right_length].y) {
+          dx = -dx;
+          if (ball_y > paddle_right[3].y || ball_y < paddle_right[paddle_right_length - 2].y){
+              if (speed > 20) {
+                speed -= 50;
+              }
+            }
       }
-
-      for (let i = 0; i < paddle_right.length; i++) {
-        if (ball_x == 930 && ball_y == paddle_right[i].y) dx = -dx;
         
-      }
-
       ball_x += dx;
       ball_y += dy;
     }
